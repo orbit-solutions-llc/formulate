@@ -4,6 +4,7 @@ extern crate sendmail;
 use sendmail::email;
 
 use rocket::form::{Form, FromForm};
+use rocket::response::status::{Accepted, BadRequest};
 use rocket::serde::{json::Json, Deserialize};
 use rocket::{get, launch, post, routes};
 
@@ -58,30 +59,32 @@ fn index() -> &'static str {
 }
 
 #[post("/", data = "<form>")]
-fn submit(form: Form<Submission<'_>>) -> Result<(), std::io::Error> {
+fn submit(form: Form<Submission<'_>>) -> Result<Accepted<&'static str>, BadRequest<String>> {
     println!("{:?}", form);
 
     let result = send_email(form.email, form.full_name, form.subject, form.message);
     match result {
         Ok(_) => {
-            println!("Thank you!  We'll get in touch as soon as we have a response.");
-            result
+            return Ok(Accepted(Some(
+                "Thank you! We'll get in touch as soon as we have a response.",
+            )))
         }
-        Err(error) => Err(error),
+        Err(error) => return Err(BadRequest(Some(error.to_string()))),
     }
 }
 
 #[post("/", format = "json", data = "<form>", rank = 2)]
-fn submit_json(form: Json<SubmitAsJson>) -> Result<(), std::io::Error> {
+fn submit_json(form: Json<SubmitAsJson>) -> Result<Accepted<&'static str>, BadRequest<String>> {
     println!("{:?}", form);
 
     let result = send_email(&form.email, &form.full_name, &form.subject, &form.message);
     match result {
         Ok(_) => {
-            println!("Thank you! We'll get in touch as soon as we have a response.");
-            result
+            return Ok(Accepted(Some(
+                "Thank you! We'll get in touch as soon as we have a response.",
+            )))
         }
-        Err(error) => Err(error),
+        Err(error) => return Err(BadRequest(Some(error.to_string()))),
     }
 }
 
