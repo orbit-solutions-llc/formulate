@@ -21,6 +21,10 @@ struct Submission<'r> {
     email: &'r str,
     subject: &'r str,
     message: &'r str,
+    #[field(name = uncased("site"))]
+    #[field(name = uncased("website"))]
+    #[field(name = uncased("location"))]
+    from_site: &'r str,
 }
 
 #[derive(Debug, Deserialize)]
@@ -33,6 +37,10 @@ struct SubmitAsJson {
     email: String,
     subject: String,
     message: String,
+    #[serde(alias = "site")]
+    #[serde(alias = "website")]
+    #[serde(alias = "location")]
+    from_site: String,
 }
 
 fn send_email(
@@ -40,13 +48,15 @@ fn send_email(
     form_full_name: &str,
     form_subject: &str,
     form_message: &str,
+    form_site: &str,
 ) -> Result<(), std::io::Error> {
-    let mail_subject = format!("You have a new inquiry from {}!", DEST_DOMAIN);
+    let mail_subject = format!("You have a new inquiry from {}!", form_site);
 
     let message = format!(
         "{} has sent a message.\n Subject: {}\n Message: {}",
         form_full_name, form_subject, form_message
     );
+    // println!("{}", message);
 
     email::send(form_email, [RETURN_EMAIL], &mail_subject, &message)
 }
@@ -58,12 +68,18 @@ fn index() -> &'static str {
 
 #[post("/", data = "<form>")]
 fn submit(form: Form<Submission<'_>>) -> Result<(Status, &'static str), BadRequest<String>> {
-    let result = send_email(form.email, form.full_name, form.subject, form.message);
+    let result = send_email(
+        form.email,
+        form.full_name,
+        form.subject,
+        form.message,
+        form.from_site,
+    );
 
     if let Err(error) = result {
-        return Err(BadRequest(Some(error.to_string())))
+        Err(BadRequest(Some(error.to_string())))
     } else {
-        return Ok((
+        Ok((
             Status::Ok,
             "Thank you! We'll get in touch as soon as we have a response.",
         ))
@@ -72,12 +88,18 @@ fn submit(form: Form<Submission<'_>>) -> Result<(Status, &'static str), BadReque
 
 #[post("/", format = "json", data = "<form>", rank = 2)]
 fn submit_json(form: Json<SubmitAsJson>) -> Result<(Status, &'static str), BadRequest<String>> {
-    let result = send_email(&form.email, &form.full_name, &form.subject, &form.message);
+    let result = send_email(
+        &form.email,
+        &form.full_name,
+        &form.subject,
+        &form.message,
+        &form.from_site,
+    );
 
     if let Err(error) = result {
-        return Err(BadRequest(Some(error.to_string())))
+        Err(BadRequest(Some(error.to_string())))
     } else {
-        return Ok((
+        Ok((
             Status::Ok,
             "Thank you! We'll get in touch as soon as we have a response.",
         ))
