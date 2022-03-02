@@ -42,15 +42,12 @@ fn send_email(
 ) -> Result<(), std::io::Error> {
     let mail_subject = format!("You have a new inquiry from {}!", DEST_DOMAIN);
 
-    email::send(
-        form_email,
-        [RETURN_EMAIL],
-        &mail_subject,
-        &format!(
-            "From {},\nSubject: {}\n{}",
-            form_full_name, form_subject, form_message
-        ),
-    )
+    let message = format!(
+        "{} has sent a message.\n Subject: {}\n Message: {}",
+        form_full_name, form_subject, form_message
+    );
+
+    email::send(form_email, [RETURN_EMAIL], &mail_subject, &message)
 }
 
 #[get("/")]
