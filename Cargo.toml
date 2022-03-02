@@ -10,3 +10,6 @@ rocket = { version = "0.5.0-rc.1", features = ["json"] }
 sendmail = "2.0.0"
 # validator = { version = "0.14", features = ["derive"] }
 
+[profile.release]
+# Works as of rust 1.59.0
+strip = "debuginfo"
