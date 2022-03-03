@@ -1,15 +1,15 @@
 // #[macro_use]
 // extern crate rocket;
-extern crate sendmail;
-use sendmail::email;
 
+use lettre::{Message, SendmailTransport, Transport};
 use rocket::form::{Form, FromForm};
 use rocket::http::Status;
 use rocket::response::status::BadRequest;
 use rocket::serde::{json::Json, Deserialize};
 use rocket::{get, launch, post, routes};
 
-const RETURN_EMAIL: &str = "test@test.com";
+const SENDING_EMAIL: &str = "test@test.com";
+const DESTINATION_EMAIL: &str = "test@test.com";
 
 #[derive(FromForm, Debug)]
 struct Submission<'r> {
@@ -49,16 +49,24 @@ fn send_email(
     form_subject: &str,
     form_message: &str,
     form_site: &str,
-) -> Result<(), std::io::Error> {
+) -> Result<(), lettre::transport::sendmail::Error> {
     let mail_subject = format!("You have a new inquiry from {}!", form_site);
 
     let message = format!(
-        "{} has sent a message.\n Subject: {}\n Message: {}",
+        "<html><body>{} has sent a message.<br/><br/>Subject: {}<br/><br/>Message: {}</html></body>",
         form_full_name, form_subject, form_message
     );
-    // println!("{}", message);
+    let email = Message::builder()
+        .from(format!("{} <{}>", form_full_name, SENDING_EMAIL).parse().unwrap())
+        .reply_to(form_email.parse().unwrap())
+        .to(DESTINATION_EMAIL.parse().unwrap())
+        .subject(mail_subject)
+        .body(String::from(message))
+        .unwrap();
 
-    email::send(form_email, [RETURN_EMAIL], &mail_subject, &message)
+    println!("{:?}", email);
+    let mailer = SendmailTransport::new();
+    mailer.send(&email)
 }
 
 #[get("/")]
