@@ -10,6 +10,7 @@ use rocket::{get, launch, post, routes};
 
 const SENDING_EMAIL: &str = "test@test.com";
 const DESTINATION_EMAIL: &str = "test@test.com";
+const SUCCESS_MSG: &str = "Thank you! We'll get in touch as soon as we're able to.";
 
 #[derive(FromForm, Debug)]
 struct Submission<'r> {
@@ -59,7 +60,11 @@ fn send_email(
         form_full_name, form_subject, form_message
     );
     let email = Message::builder()
-        .from(format!("{} <{}>", form_full_name, SENDING_EMAIL).parse().unwrap())
+        .from(
+            format!("{} <{}>", form_full_name, SENDING_EMAIL)
+                .parse()
+                .unwrap(),
+        )
         .reply_to(form_email.parse().unwrap())
         .to(DESTINATION_EMAIL.parse().unwrap())
         .subject(mail_subject)
@@ -73,7 +78,7 @@ fn send_email(
 
 #[get("/")]
 fn index() -> &'static str {
-    "Hello, world!"
+    "Nothing to see here!"
 }
 
 #[post("/", data = "<form>")]
@@ -89,10 +94,7 @@ fn submit(form: Form<Submission<'_>>) -> Result<(Status, &'static str), BadReque
     if let Err(error) = result {
         Err(BadRequest(Some(error.to_string())))
     } else {
-        Ok((
-            Status::Ok,
-            "Thank you! We'll get in touch as soon as we have a response.",
-        ))
+        Ok((Status::Ok, SUCCESS_MSG))
     }
 }
 
@@ -109,10 +111,7 @@ fn submit_json(form: Json<SubmitAsJson>) -> Result<(Status, &'static str), BadRe
     if let Err(error) = result {
         Err(BadRequest(Some(error.to_string())))
     } else {
-        Ok((
-            Status::Ok,
-            "Thank you! We'll get in touch as soon as we have a response.",
-        ))
+        Ok((Status::Ok, SUCCESS_MSG))
     }
 }
 
