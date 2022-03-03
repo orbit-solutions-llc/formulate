@@ -19,6 +19,7 @@ struct Submission<'r> {
     #[field(name = uncased("email"))]
     #[field(name = uncased("e-mail"))]
     email: &'r str,
+    #[field(default = "Hello!")]
     subject: &'r str,
     message: &'r str,
     #[field(name = uncased("site"))]
@@ -35,6 +36,7 @@ struct SubmitAsJson {
     full_name: String,
     #[serde(alias = "e-mail")]
     email: String,
+    #[serde(alias = "Hello!")]
     subject: String,
     message: String,
     #[serde(alias = "site")]
@@ -53,7 +55,7 @@ fn send_email(
     let mail_subject = format!("You have a new inquiry from {}!", form_site);
 
     let message = format!(
-        "<html><body>{} has sent a message.<br/><br/>Subject: {}<br/><br/>Message: {}</html></body>",
+        "{} has sent a message.\nSubject: {}\n\nMessage: {}",
         form_full_name, form_subject, form_message
     );
     let email = Message::builder()
@@ -64,7 +66,7 @@ fn send_email(
         .body(String::from(message))
         .unwrap();
 
-    println!("{:?}", email);
+    // println!("{:?}", email);
     let mailer = SendmailTransport::new();
     mailer.send(&email)
 }
