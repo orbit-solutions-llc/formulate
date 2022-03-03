@@ -9,7 +9,7 @@ use rocket::response::status::BadRequest;
 use rocket::serde::{json::Json, Deserialize};
 use rocket::{get, launch, post, routes};
 
-const RETURN_EMAIL: &'static str = "test@test.com";
+const RETURN_EMAIL: &str = "test@test.com";
 
 #[derive(FromForm, Debug)]
 struct Submission<'r> {
