@@ -65,17 +65,16 @@ fn send_email(
     let mail_subject = format!("{} {}!", &default_subject_line(), form_site);
 
     // Pull app config from [application] profile of "Rocket.toml"
+    // file (defined by ROCKET_CONFIG environment variable)
     // or environment variables prefixed with "FORM_SUBMISSION_"
     let config = Config::figment()
         .select("application")
-        .merge(Toml::file("Rocket.toml"))
         .merge(Env::prefixed("FORM_SUBMISSION_"))
         .extract::<AppConfig>();
     let config = match config {
         Ok(config) => config,
         Err(message) => {
-            println!("Error when getting config settings: {}", message);
-            panic!("Error while loading config.")
+            panic!("Error when getting config settings: {}", message)
         }
     };
 
