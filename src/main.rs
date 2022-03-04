@@ -1,19 +1,23 @@
-// #[macro_use]
-// extern crate rocket;
-
 use lettre::{Message, SendmailTransport, Transport};
+use rocket::figment::providers::{Env, Format, Toml};
 use rocket::form::{Form, FromForm};
 use rocket::http::Status;
 use rocket::response::status::BadRequest;
 use rocket::serde::{json::Json, Deserialize};
-use rocket::{get, launch, post, routes};
+use rocket::{get, launch, post, routes, Config};
 
-const SENDING_EMAIL: &str = "test@test.com";
-const DESTINATION_EMAIL: &str = "test@test.com";
 const SUCCESS_MSG: &str = "Thank you! We'll get in touch as soon as we're able to.";
 
+#[derive(Deserialize)]
+#[serde(crate = "rocket::serde")]
+struct AppConfig {
+    sending_email: String,
+    destination_email: String,
+}
+
+/// Form submission
 #[derive(FromForm, Debug)]
-struct Submission<'r> {
+struct FormSubmission<'r> {
     #[field(name = uncased("full_name"))]
     #[field(name = uncased("fullname"))]
     full_name: &'r str,
@@ -29,9 +33,10 @@ struct Submission<'r> {
     from_site: &'r str,
 }
 
+/// Form submission from JSON
 #[derive(Debug, Deserialize)]
 #[serde(crate = "rocket::serde")]
-struct SubmitAsJson {
+struct FormSubmissionJson {
     #[serde(alias = "fullname")]
     #[serde(alias = "fullName")]
     full_name: String,
@@ -55,18 +60,33 @@ fn send_email(
 ) -> Result<(), lettre::transport::sendmail::Error> {
     let mail_subject = format!("You have a new inquiry from {}!", form_site);
 
+    // Pull app config from "Rocket.toml" file with "application"
+    // profile, or environment variables prefixed with "FORM_SUBMISSION_"
+    let config = Config::figment()
+        .select("application")
+        .merge(Toml::file("Rocket.toml"))
+        .merge(Env::prefixed("FORM_SUBMISSION_"))
+        .extract::<AppConfig>();
+    let config = match config {
+        Ok(config) => config,
+        Err(message) => {
+            println!("Error when getting config settings: {}", message);
+            panic!("OOPS.")
+        }
+    };
+
     let message = format!(
         "{} has sent a message.\nSubject: {}\n\nMessage: {}",
         form_full_name, form_subject, form_message
     );
     let email = Message::builder()
         .from(
-            format!("{} <{}>", form_full_name, SENDING_EMAIL)
+            format!("{} <{}>", form_full_name, config.sending_email)
                 .parse()
                 .unwrap(),
         )
         .reply_to(form_email.parse().unwrap())
-        .to(DESTINATION_EMAIL.parse().unwrap())
+        .to(config.destination_email.parse().unwrap())
         .subject(mail_subject)
         .body(String::from(message))
         .unwrap();
@@ -82,7 +102,7 @@ fn index() -> &'static str {
 }
 
 #[post("/", data = "<form>")]
-fn submit(form: Form<Submission<'_>>) -> Result<(Status, &'static str), BadRequest<String>> {
+fn submit(form: Form<FormSubmission<'_>>) -> Result<(Status, &'static str), BadRequest<String>> {
     let result = send_email(
         form.email,
         form.full_name,
@@ -99,7 +119,9 @@ fn submit(form: Form<Submission<'_>>) -> Result<(Status, &'static str), BadReque
 }
 
 #[post("/", format = "json", data = "<form>", rank = 2)]
-fn submit_json(form: Json<SubmitAsJson>) -> Result<(Status, &'static str), BadRequest<String>> {
+fn submit_json(
+    form: Json<FormSubmissionJson>,
+) -> Result<(Status, &'static str), BadRequest<String>> {
     let result = send_email(
         &form.email,
         &form.full_name,
