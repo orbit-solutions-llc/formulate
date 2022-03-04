@@ -24,7 +24,7 @@ struct FormSubmission<'r> {
     #[field(name = uncased("email"))]
     #[field(name = uncased("e-mail"))]
     email: &'r str,
-    #[field(default = "Hello!")]
+    #[field(default = "You have received a new message from")]
     subject: &'r str,
     message: &'r str,
     #[field(name = uncased("site"))]
@@ -42,13 +42,17 @@ struct FormSubmissionJson {
     full_name: String,
     #[serde(alias = "e-mail")]
     email: String,
-    #[serde(alias = "Hello!")]
+    #[serde(default = "default_subject_line")]
     subject: String,
     message: String,
     #[serde(alias = "site")]
     #[serde(alias = "website")]
     #[serde(alias = "location")]
     from_site: String,
+}
+
+fn default_subject_line() -> String {
+    "You have received a new message from".to_string()
 }
 
 fn send_email(
@@ -58,7 +62,7 @@ fn send_email(
     form_message: &str,
     form_site: &str,
 ) -> Result<(), lettre::transport::sendmail::Error> {
-    let mail_subject = format!("You have a new inquiry from {}!", form_site);
+    let mail_subject = format!("{} {}!", &default_subject_line(), form_site);
 
     // Pull app config from "Rocket.toml" file with "application"
     // profile, or environment variables prefixed with "FORM_SUBMISSION_"
@@ -75,10 +79,18 @@ fn send_email(
         }
     };
 
-    let message = format!(
-        "{} has sent a message.\nSubject: {}\n\nMessage: {}",
-        form_full_name, form_subject, form_message
-    );
+    let message = if form_subject != &default_subject_line() {
+        format!(
+            "{} has sent a message.\nSubject: {}\n\nMessage: {}",
+            form_full_name, form_subject, form_message
+        )
+    } else {
+        format!(
+            "{} sent you the following message:\n\n{}",
+            form_full_name, form_message
+        )
+    };
+
     let email = Message::builder()
         .from(
             format!("{} <{}>", form_full_name, config.sending_email)
@@ -88,7 +100,7 @@ fn send_email(
         .reply_to(form_email.parse().unwrap())
         .to(config.destination_email.parse().unwrap())
         .subject(mail_subject)
-        .body(String::from(message))
+        .body(message)
         .unwrap();
 
     // println!("{:?}", email);
