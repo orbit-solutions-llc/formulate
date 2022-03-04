@@ -1,5 +1,5 @@
 use lettre::{Message, SendmailTransport, Transport};
-use rocket::figment::providers::{Env, Format, Toml};
+use rocket::figment::providers::Env;
 use rocket::form::{Form, FromForm};
 use rocket::http::Status;
 use rocket::response::status::BadRequest;
