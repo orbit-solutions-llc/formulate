@@ -1,0 +1,7 @@
+[defaults.tls]
+certs = "/path/to/fullchain.cer"
+key = "/path/to/site.dev.key"
+
+[application]
+destination_email = "test@domain.com"
+sending_email = "noreply@domain.com"
