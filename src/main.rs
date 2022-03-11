@@ -89,3 +89,5 @@ fn submit_json(
 fn rocket() -> _ {
     rocket::build().mount("/", routes![index, submit, submit_json])
 }
+
+#[cfg(test)] mod tests;
