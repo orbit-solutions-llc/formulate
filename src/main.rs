@@ -44,14 +44,13 @@ struct FormSubmissionJson {
     from_site: String,
 }
 
-
 #[get("/")]
 fn index() -> &'static str {
     "Nothing to see here!"
 }
 
 #[post("/", data = "<form>")]
-fn submit(form: Form<FormSubmission<'_>>) -> Result<(Status, &'static str), BadRequest<String>> {
+fn submit(form: Form<FormSubmission<'_>>) -> Result<(Status, &str), BadRequest<String>> {
     let result = send_email(
         form.email,
         form.full_name,
@@ -61,7 +60,7 @@ fn submit(form: Form<FormSubmission<'_>>) -> Result<(Status, &'static str), BadR
     );
 
     if let Err(error) = result {
-        Err(BadRequest(Some(error.to_string())))
+        Err(error)
     } else {
         Ok((Status::Ok, SUCCESS_MSG))
     }
@@ -80,7 +79,7 @@ fn submit_json(
     );
 
     if let Err(error) = result {
-        Err(BadRequest(Some(error.to_string())))
+        Err(error)
     } else {
         Ok((Status::Ok, SUCCESS_MSG))
     }

@@ -1,5 +1,6 @@
 use lettre::{Message, SendmailTransport, Transport};
 use rocket::figment::providers::Env;
+use rocket::response::status::BadRequest;
 use rocket::serde::Deserialize;
 use rocket::Config;
 
@@ -22,7 +23,7 @@ pub fn send_email(
     form_subject: &str,
     form_message: &str,
     form_site: &str,
-) -> Result<(), lettre::transport::sendmail::Error> {
+) -> Result<(), BadRequest<String>> {
     let mail_subject = format!("{} {}!", &default_subject_line(), form_site);
 
     // Pull app config from [application] profile of "Rocket.toml"
@@ -51,19 +52,28 @@ pub fn send_email(
         )
     };
 
-    let email = Message::builder()
+    let reply_to_email = form_email.parse::<lettre::message::Mailbox>();
+    let reply_to_email = match reply_to_email {
+        Ok(email) => email,
+        Err(reason) => return Err(BadRequest(Some(format!("Problem with email address: {reason}") ))),
+    };
+
+    let email_msg = Message::builder()
         .from(
             format!("{} <{}>", form_full_name, config.sending_email)
                 .parse()
                 .unwrap(),
         )
-        .reply_to(form_email.parse().unwrap())
+        .reply_to(reply_to_email)
         .to(config.destination_email.parse().unwrap())
         .subject(mail_subject)
         .body(message)
         .unwrap();
 
-    // println!("{:?}", email);
+    // println!("{:?}", email_msg);
     let mailer = SendmailTransport::new();
-    mailer.send(&email)
+    match mailer.send(&email_msg) {
+        Ok(message) => Ok(message),
+        Err(error) => Err(BadRequest(Some(error.to_string()))),
+    }
 }
