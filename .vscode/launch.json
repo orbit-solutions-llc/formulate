@@ -1,0 +1,46 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'formulate'",
+      // "initCommands": ['alias sendmail=send'],
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=formulate",
+          "--package=formulate"
+        ],
+        "filter": {
+          "name": "formulate",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'formulate'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=formulate",
+          "--package=formulate"
+        ],
+        "filter": {
+          "name": "formulate",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
