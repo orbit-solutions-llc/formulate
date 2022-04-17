@@ -5,15 +5,17 @@ use rocket::http::Status;
 use rocket::response::status::BadRequest;
 use rocket::serde::{json::Json, Deserialize};
 use rocket::{get, launch, post, routes};
+use validator::Validate;
 
 const SUCCESS_MSG: &str = "Thank you! We'll get in touch as soon as we're able to.";
 
 /// Form submission
-#[derive(FromForm, Debug)]
+#[derive(Debug, FromForm, Validate)]
 struct FormSubmission<'r> {
     #[field(name = uncased("full_name"))]
     #[field(name = uncased("fullname"))]
     full_name: &'r str,
+    #[validate(email(message = "Invalid email address provided. Please check email and try again."))]
     #[field(name = uncased("email"))]
     #[field(name = uncased("e-mail"))]
     email: &'r str,
@@ -27,16 +29,18 @@ struct FormSubmission<'r> {
 }
 
 /// Form submission from JSON
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Validate)]
 #[serde(crate = "rocket::serde")]
 struct FormSubmissionJson {
     #[serde(alias = "fullname")]
     #[serde(alias = "fullName")]
     full_name: String,
+    #[validate(email(message = "Invalid email address provided. Please check email and try again."))]
     #[serde(alias = "e-mail")]
     email: String,
     #[serde(default = "default_subject_line")]
     subject: String,
+    // #[validate(length(min = 4))]
     message: String,
     #[serde(alias = "site")]
     #[serde(alias = "website")]
@@ -46,11 +50,17 @@ struct FormSubmissionJson {
 
 #[get("/")]
 fn index() -> &'static str {
-    "Nothing to see here!"
+    "for·mu·late, verb, to create or devise methodically."
 }
 
 #[post("/", data = "<form>")]
 fn submit(form: Form<FormSubmission<'_>>) -> Result<(Status, &str), BadRequest<String>> {
+  let validated = form.validate();
+
+  if let Err(error) = validated {
+    Err(BadRequest(Some(error.to_string())))
+  } else {
+
     let result = send_email(
         form.email,
         form.full_name,
@@ -64,6 +74,7 @@ fn submit(form: Form<FormSubmission<'_>>) -> Result<(Status, &str), BadRequest<S
     } else {
         Ok((Status::Ok, SUCCESS_MSG))
     }
+  }
 }
 
 #[post("/", format = "json", data = "<form>", rank = 2)]

@@ -3,6 +3,15 @@
 version = 3
 
 [[package]]
+name = "aho-corasick"
+version = "0.7.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e37cfd5e7657ada45f742d6e99ca5788580b5c529dc78faf11ece6dc702656f"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "ansi_term"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -249,11 +258,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 
 [[package]]
+name = "form_urlencoded"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5fc25a87fa4fd2094bffb06925852034d90a17f0d1e05197d4956d3555752191"
+dependencies = [
+ "matches",
+ "percent-encoding",
+]
+
+[[package]]
 name = "formulate"
 version = "0.3.0"
 dependencies = [
  "lettre",
  "rocket",
+ "validator",
 ]
 
 [[package]]
@@ -488,6 +508,12 @@ dependencies = [
  "unicode-bidi",
  "unicode-normalization",
 ]
+
+[[package]]
+name = "if_chain"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb56e1aa765b4b4f3aadfab769793b7087bb03a4ea4920644a6d238e2df5b9ed"
 
 [[package]]
 name = "indexmap"
@@ -833,6 +859,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eb9f9e6e233e5c4a35559a617bf40a4ec447db2e84c20b55a6f83167b7e57872"
 
 [[package]]
+name = "proc-macro-error"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "da25490ff9892aab3fcf7c36f08cfb902dd3e71ca0f9f9517bea02a73a5ce38c"
+dependencies = [
+ "proc-macro-error-attr",
+ "proc-macro2",
+ "quote",
+ "syn",
+ "version_check",
+]
+
+[[package]]
+name = "proc-macro-error-attr"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1be40180e52ecc98ad80b184934baf3d0d29f979574e439af5a55274b35f869"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "version_check",
+]
+
+[[package]]
 name = "proc-macro-hack"
 version = "0.5.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -940,6 +990,8 @@ version = "1.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d07a8629359eb56f1e2fb1652bb04212c072a87ba68546a04065d525673ac461"
 dependencies = [
+ "aho-corasick",
+ "memchr",
  "regex-syntax",
 ]
 
@@ -1563,6 +1615,61 @@ name = "unicode-xid"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ccb82d61f80a663efe1f787a51b16b5a51e3314d6ac365b08639f52387b33f3"
+
+[[package]]
+name = "url"
+version = "2.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a507c383b2d33b5fc35d1861e77e6b383d158b2da5e14fe51b83dfedf6fd578c"
+dependencies = [
+ "form_urlencoded",
+ "idna",
+ "matches",
+ "percent-encoding",
+]
+
+[[package]]
+name = "validator"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d0f08911ab0fee2c5009580f04615fa868898ee57de10692a45da0c3bcc3e5e"
+dependencies = [
+ "idna",
+ "lazy_static",
+ "regex",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "url",
+ "validator_derive",
+ "validator_types",
+]
+
+[[package]]
+name = "validator_derive"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d85135714dba11a1bd0b3eb1744169266f1a38977bf4e3ff5e2e1acb8c2b7eee"
+dependencies = [
+ "if_chain",
+ "lazy_static",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "syn",
+ "validator_types",
+]
+
+[[package]]
+name = "validator_types"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ded9d97e1d42327632f5f3bae6403c04886e2de3036261ef42deebd931a6a291"
+dependencies = [
+ "proc-macro2",
+ "syn",
+]
 
 [[package]]
 name = "valuable"
