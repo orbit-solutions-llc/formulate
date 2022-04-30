@@ -1,0 +1,30 @@
+#! /bin/sh
+
+# PROVIDE: formulate
+# REQUIRE: networking
+# KEYWORD: shutdown
+
+#
+# Move built executable to /usr/local/bin,
+# copy this file to /usr/local/etc/rc.d/ then,
+# add the following lines to /etc/rc.conf to enable formulate:
+#
+#formulate_enable="YES"
+
+. /etc/rc.subr
+
+name="formulate"
+rcvar="${name}_enable"
+config_directory="/usr/local/etc"
+daemoned_command="/usr/local/bin/formulate"
+pidfile="/var/run/${name}.pid"
+command="/usr/sbin/daemon"
+command_args="-P ${pidfile} -r -S ${daemoned_command}"
+
+load_rc_config $name
+
+: ${formulate_enable:=NO}
+#: ${formulate_user:=git_daemon}
+
+run_rc_command "$1"
+
