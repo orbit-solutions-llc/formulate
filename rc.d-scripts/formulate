@@ -6,10 +6,12 @@
 
 #
 # Move built executable to /usr/local/bin,
-# copy this file to /usr/local/etc/rc.d/ then,
+# copy _this_ file to /usr/local/etc/rc.d/,
+# copy a filled out Rocket.toml to /usr/local/etc/, then
 # add the following lines to /etc/rc.conf to enable formulate:
 #
 #formulate_enable="YES"
+#formulate_env="ROCKET_CONFIG=/usr/local/etc/Rocket.toml"
 
 . /etc/rc.subr
 
