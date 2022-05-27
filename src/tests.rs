@@ -26,28 +26,36 @@ fn test_index() {
 
 #[test]
 fn test_submit() {
-    let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let form_body = "fullname=Full+Name&email=test%40test.com&subject=mail+title&message=You+have+a+new+inquiry+from&site=site.com";
-    let response = create_response(&client, ContentType::Form, form_body);
-    assert!(response.status() == Status::Ok);
-    assert!(response.into_string() == Some(super::SUCCESS_MSG.into()));
+    match Client::tracked(rocket()) {
+      Ok(client) => {
+        let form_body = "fullname=Full+Name&email=test%40test.com&subject=mail+title&message=You+have+a+new+inquiry+from&site=site.com";
+        let response = create_response(&client, ContentType::Form, form_body);
+        assert!(response.status() == Status::Ok);
+        assert!(response.into_string() == Some(super::SUCCESS_MSG.into()));
 
-    let malformed_email_body = "fullname=Full+Name&email=testtest.com&subject=mail+title&message=You+have+a+new+inquiry+from&site=site.com";
-    let response = create_response(&client, ContentType::Form, malformed_email_body);
-    assert!(response.status() == Status::BadRequest);
+        let malformed_email_body = "fullname=Full+Name&email=testtest.com&subject=mail+title&message=You+have+a+new+inquiry+from&site=site.com";
+        let response = create_response(&client, ContentType::Form, malformed_email_body);
+        assert!(response.status() == Status::BadRequest);
+      }
+      Err(error) => panic!("Invalid rocket instance: {error}")
+    }
 
 }
 
 #[test]
 fn test_submit_json() {
-    let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let form_body = "{\"fullname\":\"Named\",\"email\":\"publico@thebennettproject.com\",\"subject\":\"mail\",\"message\":\"You have a new inquiry from\",\"site\":\"site.com\"}";
-    let response = create_response(&client, ContentType::JSON, form_body);
-    assert!(response.status() == Status::Ok);
-    assert!(response.into_string() == Some(super::SUCCESS_MSG.into()));
-
-    let malformed_email_body = "{\"fullname\":\"Named\",\"email\":\"testtest.com\",\"subject\":\"mail\",\"message\":\"You have a new inquiry from\",\"site\":\"site.com\"}";
-    let response = create_response(&client, ContentType::JSON, malformed_email_body);
-    assert!(response.status() == Status::BadRequest);
+    match Client::tracked(rocket()) {
+      Ok(client) => {
+        let form_body = "{\"fullname\":\"Named\",\"email\":\"publico@thebennettproject.com\",\"subject\":\"mail\",\"message\":\"You have a new inquiry from\",\"site\":\"site.com\"}";
+        let response = create_response(&client, ContentType::JSON, form_body);
+        assert!(response.status() == Status::Ok);
+        assert!(response.into_string() == Some(super::SUCCESS_MSG.into()));
+    
+        let malformed_email_body = "{\"fullname\":\"Named\",\"email\":\"testtest.com\",\"subject\":\"mail\",\"message\":\"You have a new inquiry from\",\"site\":\"site.com\"}";
+        let response = create_response(&client, ContentType::JSON, malformed_email_body);
+        assert!(response.status() == Status::BadRequest);
+      }
+      Err(error) => panic!("Invalid rocket instance: {error}")
+    }
 
 }
