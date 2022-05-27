@@ -14,10 +14,14 @@ fn create_response<'c, 'r>(client: &'c Client, response_type: ContentType, respo
 
 #[test]
 fn test_index() {
-    let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get(rocket::uri!(super::index)).dispatch();
-    assert!(response.status() == Status::Ok);
-    assert!(response.into_string() == Some("Nothing to see here!".into()));
+    match Client::tracked(rocket()) {
+      Ok(client) => {
+        let response = client.get(rocket::uri!(super::index)).dispatch();
+        assert!(response.status() == Status::Ok);
+        assert!(response.into_string() == Some(WELCOME_MSG.into()));
+      }
+      Err(error) => panic!("Invalid rocket instance: {error}")
+    }
 }
 
 #[test]
