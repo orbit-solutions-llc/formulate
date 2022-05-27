@@ -1,5 +1,6 @@
 #[cfg(test)]
 use super::rocket;
+use super::strings::WELCOME_MSG;
 use rocket::http::{ContentType, Status};
 use rocket::local::blocking::{Client, LocalResponse};
 

@@ -1,13 +1,14 @@
 mod mailer;
 use mailer::{default_subject_line, send_email};
+mod strings;
+use strings::{SUCCESS_MSG, WELCOME_MSG};
+
 use rocket::form::{Form, FromForm};
 use rocket::http::Status;
 use rocket::response::status::BadRequest;
 use rocket::serde::{json::Json, Deserialize};
 use rocket::{get, launch, post, routes};
 use validator::Validate;
-
-const SUCCESS_MSG: &str = "Thank you! We'll get in touch as soon as we're able to.";
 
 /// Form submission
 #[derive(Debug, FromForm, Validate)]
@@ -50,7 +51,7 @@ struct FormSubmissionJson {
 
 #[get("/")]
 fn index() -> &'static str {
-    "for·mu·late, verb, to create or devise methodically."
+  WELCOME_MSG
 }
 
 #[post("/", data = "<form>")]
