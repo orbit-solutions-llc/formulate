@@ -1,5 +1,5 @@
 mod mailer;
-use mailer::{default_subject_line, send_email};
+use mailer::{default_subject_line, send_email, MailConfigError};
 mod strings;
 use strings::{SUCCESS_MSG, WELCOME_MSG};
 
@@ -73,7 +73,12 @@ fn submit(form: Form<FormSubmission>) -> Result<(Status, String), BadRequest<Str
     );
 
     if let Err(error) = result {
-        Err(error)
+            match error {
+                MailConfigError::AppConfig(err) => Err(BadRequest(Some(err.to_string()))),
+                MailConfigError::AddressParse(err) => Err(BadRequest(Some(err.to_string()))),
+                MailConfigError::EmailBuild(err) => Err(BadRequest(Some(err.to_string()))),
+                MailConfigError::SendmailTransport(err) => Err(BadRequest(Some(err.to_string()))),
+            }
     } else {
             Ok((Status::Ok, SUCCESS_MSG.to_string()))
     }
@@ -93,7 +98,12 @@ fn submit_json(
     );
 
     if let Err(error) = result {
-        Err(error)
+        match error {
+            MailConfigError::AddressParse(err) => Err(BadRequest(Some(err.to_string()))),
+            MailConfigError::AppConfig(err) => Err(BadRequest(Some(err.to_string()))),
+            MailConfigError::EmailBuild(err) => Err(BadRequest(Some(err.to_string()))),
+            MailConfigError::SendmailTransport(err) => Err(BadRequest(Some(err.to_string()))),
+        }
     } else {
         Ok((Status::Ok, SUCCESS_MSG))
     }
