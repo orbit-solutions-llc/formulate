@@ -4,6 +4,14 @@ use rocket::response::status::BadRequest;
 use rocket::serde::Deserialize;
 use rocket::Config;
 
+/// Potential errors which can be created when sending an email
+pub enum MailConfigError {
+    AppConfig(rocket::figment::error::Error),
+    AddressParse(lettre::address::AddressError),
+    EmailBuild(lettre::error::Error),
+    SendmailTransport(lettre::transport::sendmail::Error),
+}
+
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]
 struct AppConfig {
