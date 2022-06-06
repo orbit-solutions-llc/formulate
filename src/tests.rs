@@ -54,6 +54,7 @@ fn test_submit_json() {
         let malformed_email_body = "{\"fullname\":\"Named\",\"email\":\"testtest.com\",\"subject\":\"mail\",\"message\":\"You have a new inquiry from\",\"site\":\"site.com\"}";
         let response = create_response(&client, ContentType::JSON, malformed_email_body);
         assert!(response.status() == Status::BadRequest);
+            assert!(response.into_string().unwrap() == String::from("Missing domain or user"));
       }
       Err(error) => panic!("Invalid rocket instance: {error}")
     }
