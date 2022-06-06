@@ -12,21 +12,23 @@ use validator::Validate;
 
 /// Form submission
 #[derive(Debug, FromForm, Validate)]
-struct FormSubmission<'r> {
+struct FormSubmission {
     #[field(name = uncased("full_name"))]
     #[field(name = uncased("fullname"))]
-    full_name: &'r str,
-    #[validate(email(message = "Invalid email address provided. Please check email and try again."))]
+    full_name: String,
+    #[validate(email(
+        message = "Invalid email address provided. Please check email and try again."
+    ))]
     #[field(name = uncased("email"))]
     #[field(name = uncased("e-mail"))]
-    email: &'r str,
+    email: String,
     #[field(default = "You have received a new message from")]
-    subject: &'r str,
-    message: &'r str,
+    subject: String,
+    message: String,
     #[field(name = uncased("site"))]
     #[field(name = uncased("website"))]
     #[field(name = uncased("location"))]
-    from_site: &'r str,
+    from_site: String,
 }
 
 /// Form submission from JSON
@@ -51,11 +53,11 @@ struct FormSubmissionJson {
 
 #[get("/")]
 fn index() -> &'static str {
-  WELCOME_MSG
+    WELCOME_MSG
 }
 
 #[post("/", data = "<form>")]
-fn submit(form: Form<FormSubmission<'_>>) -> Result<(Status, &str), BadRequest<String>> {
+fn submit(form: Form<FormSubmission>) -> Result<(Status, String), BadRequest<String>> {
   let validated = form.validate();
 
   if let Err(error) = validated {
@@ -63,17 +65,17 @@ fn submit(form: Form<FormSubmission<'_>>) -> Result<(Status, &str), BadRequest<S
   } else {
 
     let result = send_email(
-        form.email,
-        form.full_name,
-        form.subject,
-        form.message,
-        form.from_site,
+            &form.email,
+            &form.full_name,
+            &form.subject,
+            &form.message,
+            &form.from_site,
     );
 
     if let Err(error) = result {
         Err(error)
     } else {
-        Ok((Status::Ok, SUCCESS_MSG))
+            Ok((Status::Ok, SUCCESS_MSG.to_string()))
     }
   }
 }
@@ -102,4 +104,5 @@ fn rocket() -> _ {
     rocket::build().mount("/", routes![index, submit, submit_json])
 }
 
-#[cfg(test)] mod tests;
+#[cfg(test)]
+mod tests;

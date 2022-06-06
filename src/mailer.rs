@@ -11,9 +11,9 @@ struct AppConfig {
     destination_email: String,
 }
 
-/// Provides a default subject line for emails sent in absence of one being submitted by the web form.
+/// Provides a default subject line for emails sent, if one is not present with form data.
 pub fn default_subject_line() -> String {
-    "You have received a new message from".to_string()
+    String::from("You have received a new message from")
 }
 
 /// Uses native sendmail functionality to send email containing form contents.
