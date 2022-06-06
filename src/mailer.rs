@@ -1,6 +1,5 @@
 use lettre::{Message, SendmailTransport, Transport};
 use rocket::figment::providers::Env;
-use rocket::response::status::BadRequest;
 use rocket::serde::Deserialize;
 use rocket::Config;
 
@@ -31,57 +30,60 @@ pub fn send_email(
     form_subject: &str,
     form_message: &str,
     form_site: &str,
-) -> Result<(), BadRequest<String>> {
-    let mail_subject = format!("{} {}!", &default_subject_line(), form_site);
+) -> Result<(), MailConfigError> {
+    let mail_subject = format!("{} {}!", default_subject_line(), form_site);
 
     // Pull app config from [application] profile of "Rocket.toml"
     // file (defined by ROCKET_CONFIG environment variable)
     // or environment variables prefixed with "FORM_SUBMISSION_"
-    let config = Config::figment()
+    let config = match Config::figment()
         .select("application")
         .merge(Env::prefixed("FORM_SUBMISSION_"))
-        .extract::<AppConfig>();
-    let config = match config {
+        .extract::<AppConfig>()
+    {
         Ok(config) => config,
-        Err(message) => {
-            panic!("Error when getting config settings: {}", message)
+        Err(err) => {
+            return Err(MailConfigError::AppConfig(err));
         }
     };
 
-    let message = if form_subject != &default_subject_line() {
+    let message = if form_subject != default_subject_line() {
         format!(
-            "{} has sent a message.\nSubject: {}\n\nMessage: {}",
-            form_full_name, form_subject, form_message
+          "{form_full_name} has sent a message.\nSubject: {form_subject}\n\nMessage: {form_message}",
         )
     } else {
-        format!(
-            "{} sent you the following message:\n\n{}",
-            form_full_name, form_message
-        )
+        format!("{form_full_name} sent you the following message:\n\n{form_message}",)
     };
 
-    let reply_to_email = form_email.parse::<lettre::message::Mailbox>();
-    let reply_to_email = match reply_to_email {
+    let reply_to_email = match form_email.parse::<lettre::message::Mailbox>() {
         Ok(email) => email,
-        Err(reason) => return Err(BadRequest(Some(format!("Problem with email address: {reason}") ))),
+        Err(err) => return Err(MailConfigError::AddressParse(err)),
+    };
+    let sending_email = match format!("{} <{}>", form_full_name, config.sending_email)
+        .parse::<lettre::message::Mailbox>()
+    {
+        Ok(email) => email,
+        Err(err) => return Err(MailConfigError::AddressParse(err)),
+    };
+    let destination_email = match config.destination_email.parse::<lettre::message::Mailbox>() {
+        Ok(email) => email,
+        Err(err) => return Err(MailConfigError::AddressParse(err)),
     };
 
-    let email_msg = Message::builder()
-        .from(
-            format!("{} <{}>", form_full_name, config.sending_email)
-                .parse()
-                .unwrap(),
-        )
+    let email_msg = match Message::builder()
+        .from(sending_email)
         .reply_to(reply_to_email)
-        .to(config.destination_email.parse().unwrap())
+        .to(destination_email)
         .subject(mail_subject)
         .body(message)
-        .unwrap();
+    {
+        Ok(msg) => msg,
+        Err(err) => return Err(MailConfigError::EmailBuild(err)),
+    };
 
-    // println!("{:?}", email_msg);
     let mailer = SendmailTransport::new();
     match mailer.send(&email_msg) {
         Ok(message) => Ok(message),
-        Err(error) => Err(BadRequest(Some(error.to_string()))),
+        Err(error) => return Err(MailConfigError::SendmailTransport(error)),
     }
 }
