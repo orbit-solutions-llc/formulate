@@ -23,7 +23,7 @@ pub fn default_subject_line() -> String {
     String::from("You have received a new message from")
 }
 
-/// Uses native sendmail functionality to send email containing form contents.
+/// Uses sendmail application to send email containing form contents.
 pub fn send_email(
     form_email: &str,
     form_full_name: &str,
@@ -33,8 +33,8 @@ pub fn send_email(
 ) -> Result<(), MailConfigError> {
     let mail_subject = format!("{} {}!", default_subject_line(), form_site);
 
-    // Pull app config from [application] profile of "Rocket.toml"
-    // file (defined by ROCKET_CONFIG environment variable)
+    // Pulls app config from [application] profile of "Rocket.toml"
+    // (defined by ROCKET_CONFIG environment variable)
     // or environment variables prefixed with "FORM_SUBMISSION_"
     let config = match Config::figment()
         .select("application")

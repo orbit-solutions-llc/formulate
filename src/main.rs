@@ -38,7 +38,9 @@ struct FormSubmissionJson {
     #[serde(alias = "fullname")]
     #[serde(alias = "fullName")]
     full_name: String,
-    #[validate(email(message = "Invalid email address provided. Please check email and try again."))]
+    #[validate(email(
+        message = "Invalid email address provided. Please check email and try again."
+    ))]
     #[serde(alias = "e-mail")]
     email: String,
     #[serde(default = "default_subject_line")]
@@ -58,31 +60,30 @@ fn index() -> &'static str {
 
 #[post("/", data = "<form>")]
 fn submit(form: Form<FormSubmission>) -> Result<(Status, String), BadRequest<String>> {
-  let validated = form.validate();
+    let validated = form.validate();
 
-  if let Err(error) = validated {
-    Err(BadRequest(Some(error.to_string())))
-  } else {
-
-    let result = send_email(
+    if let Err(error) = validated {
+        Err(BadRequest(Some(error.to_string())))
+    } else {
+        let result = send_email(
             &form.email,
             &form.full_name,
             &form.subject,
             &form.message,
             &form.from_site,
-    );
+        );
 
-    if let Err(error) = result {
+        if let Err(error) = result {
             match error {
                 MailConfigError::AppConfig(err) => Err(BadRequest(Some(err.to_string()))),
                 MailConfigError::AddressParse(err) => Err(BadRequest(Some(err.to_string()))),
                 MailConfigError::EmailBuild(err) => Err(BadRequest(Some(err.to_string()))),
                 MailConfigError::SendmailTransport(err) => Err(BadRequest(Some(err.to_string()))),
             }
-    } else {
+        } else {
             Ok((Status::Ok, SUCCESS_MSG.to_string()))
+        }
     }
-  }
 }
 
 #[post("/", format = "json", data = "<form>", rank = 2)]
