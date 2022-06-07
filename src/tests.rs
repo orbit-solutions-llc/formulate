@@ -26,6 +26,31 @@ fn create_response<'c, 'r>(
         .dispatch()
 }
 
+fn create_form_body(email: &str) -> String {
+    format!("fullname=Full+Name&email={email}&subject=mail+title&message=You+have+a+new+inquiry+from&site=site.com")
+}
+
+fn test_email_validity(validation_input: (&str, &str), client: &Client) {
+    let form_body = create_form_body(validation_input.0);
+    let response = create_response(client, ContentType::Form, &form_body);
+    assert!(response.status() == Status::BadRequest);
+    // assert!(response.into_string().unwrap() == String::from(validation_input.1));
+    assert!(response.into_string().unwrap() == format!("email: {EMAIL_VALIDATION_MSG}"));
+}
+
+fn create_json_body(email: &str) -> String {
+    format!("{{\"fullname\":\"Named\",\"email\":\"{email}\",\"subject\":\"mail\",\"message\":\"You have a new inquiry from\",\"site\":\"site.com\"}}")
+}
+
+fn test_email_validity_json(validation_input: (&str, &str), client: &Client) {
+    let form_body = create_json_body(validation_input.0);
+    let response = create_response(client, ContentType::JSON, &form_body);
+    assert!(response.status() == Status::BadRequest);
+    // println!("{}", response.into_string().unwrap());
+    // assert!(response.into_string().unwrap() == String::from(validation_input.1));
+    assert!(response.into_string().unwrap() == format!("email: {EMAIL_VALIDATION_MSG}"));
+}
+
 #[test]
 fn test_index() {
     match Client::tracked(rocket()) {
@@ -40,16 +65,18 @@ fn test_index() {
 
 #[test]
 fn test_submit() {
+    let email_valid = "test%40test.com";
     match Client::tracked(rocket()) {
         Ok(client) => {
-            let lowercase_form_body = "fullname=Full+Name&email=test%40test.com&subject=mail+title&message=You+have+a+new+inquiry+from&site=site.com";
-            let response = create_response(&client, ContentType::Form, lowercase_form_body);
+            let form_body = create_form_body(email_valid);
+            let response = create_response(&client, ContentType::Form, &form_body);
             assert!(response.status() == Status::Ok);
             assert!(response.into_string() == Some(super::SUCCESS_MSG.into()));
 
-            let malformed_email_body = "fullname=Full+Name&email=testtest.com&subject=mail+title&message=You+have+a+new+inquiry+from&site=site.com";
-            let response = create_response(&client, ContentType::Form, malformed_email_body);
-            assert!(response.status() == Status::BadRequest);
+            test_email_validity(mail_variants::email_missing_parts, &client);
+            test_email_validity(mail_variants::email_unbalanced, &client);
+            test_email_validity(mail_variants::email_invalid_user, &client);
+            test_email_validity(mail_variants::email_invalid_domain, &client);
         }
         Err(error) => panic!("Invalid rocket instance: {error}"),
     }
@@ -57,17 +84,19 @@ fn test_submit() {
 
 #[test]
 fn test_submit_json() {
+    let email_valid = "publico@thebennettproject.com";
+
     match Client::tracked(rocket()) {
         Ok(client) => {
-            let form_body = "{\"fullname\":\"Named\",\"email\":\"publico@thebennettproject.com\",\"subject\":\"mail\",\"message\":\"You have a new inquiry from\",\"site\":\"site.com\"}";
-            let response = create_response(&client, ContentType::JSON, form_body);
+            let form_body = create_json_body(email_valid);
+            let response = create_response(&client, ContentType::JSON, &form_body);
             assert!(response.status() == Status::Ok);
-            assert!(response.into_string() == Some(super::SUCCESS_MSG.into()));
+            assert!(response.into_string().unwrap() == super::SUCCESS_MSG);
 
-            let malformed_email_body = "{\"fullname\":\"Named\",\"email\":\"testtest.com\",\"subject\":\"mail\",\"message\":\"You have a new inquiry from\",\"site\":\"site.com\"}";
-            let response = create_response(&client, ContentType::JSON, malformed_email_body);
-            assert!(response.status() == Status::BadRequest);
-            assert!(response.into_string().unwrap() == String::from("Missing domain or user"));
+            test_email_validity_json(mail_variants::email_missing_parts, &client);
+            test_email_validity_json(mail_variants::email_unbalanced, &client);
+            test_email_validity_json(mail_variants::email_invalid_user, &client);
+            test_email_validity_json(mail_variants::email_invalid_domain, &client);
         }
         Err(error) => panic!("Invalid rocket instance: {error}"),
     }
