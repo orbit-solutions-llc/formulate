@@ -1,8 +1,18 @@
 #[cfg(test)]
 use super::rocket;
-use super::strings::WELCOME_MSG;
+use super::strings::{EMAIL_VALIDATION_MSG, WELCOME_MSG};
 use rocket::http::{ContentType, Status};
 use rocket::local::blocking::{Client, LocalResponse};
+
+mod mail_variants {
+    pub const email_missing_parts: (&str, &str) = ("testtest.com", "Missing domain or user");
+    pub const email_unbalanced: (&str, &str) =
+        ("Test User <testtest.com", "Unbalanced angle bracket");
+    pub const email_invalid_user: (&str, &str) =
+        ("(publico@thebennettproject.com", "Invalid email user");
+    pub const email_invalid_domain: (&str, &str) =
+        ("publico@#thebennettproject.com", "Invalid email domain");
+}
 
 fn create_response<'c, 'r>(
     client: &'c Client,
