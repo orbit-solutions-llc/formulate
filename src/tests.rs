@@ -5,13 +5,11 @@ use rocket::http::{ContentType, Status};
 use rocket::local::blocking::{Client, LocalResponse};
 
 mod mail_variants {
-    pub const email_missing_parts: (&str, &str) = ("testtest.com", "Missing domain or user");
-    pub const email_unbalanced: (&str, &str) =
+    pub const EMAIL_MISSING_PARTS: (&str, &str) = ("testtest.com", "Missing domain or user");
+    pub const EMAIL_UNBALANCED: (&str, &str) =
         ("Test User <testtest.com", "Unbalanced angle bracket");
-    pub const email_invalid_user: (&str, &str) =
-        ("(publico@thebennettproject.com", "Invalid email user");
-    pub const email_invalid_domain: (&str, &str) =
-        ("publico@#thebennettproject.com", "Invalid email domain");
+    pub const EMAIL_INVALID_USER: (&str, &str) = ("(test@test.com", "Invalid email user");
+    pub const EMAIL_INVALID_DOMAIN: (&str, &str) = ("test@#test.com", "Invalid email domain");
 }
 
 fn create_response<'c, 'r>(
@@ -73,10 +71,10 @@ fn test_submit() {
             assert!(response.status() == Status::Ok);
             assert!(response.into_string() == Some(super::SUCCESS_MSG.into()));
 
-            test_email_validity(mail_variants::email_missing_parts, &client);
-            test_email_validity(mail_variants::email_unbalanced, &client);
-            test_email_validity(mail_variants::email_invalid_user, &client);
-            test_email_validity(mail_variants::email_invalid_domain, &client);
+            test_email_validity(mail_variants::EMAIL_MISSING_PARTS, &client);
+            test_email_validity(mail_variants::EMAIL_UNBALANCED, &client);
+            test_email_validity(mail_variants::EMAIL_INVALID_USER, &client);
+            test_email_validity(mail_variants::EMAIL_INVALID_DOMAIN, &client);
         }
         Err(error) => panic!("Invalid rocket instance: {error}"),
     }
@@ -93,10 +91,10 @@ fn test_submit_json() {
             assert!(response.status() == Status::Ok);
             assert!(response.into_string().unwrap() == super::SUCCESS_MSG);
 
-            test_email_validity_json(mail_variants::email_missing_parts, &client);
-            test_email_validity_json(mail_variants::email_unbalanced, &client);
-            test_email_validity_json(mail_variants::email_invalid_user, &client);
-            test_email_validity_json(mail_variants::email_invalid_domain, &client);
+            test_email_validity_json(mail_variants::EMAIL_MISSING_PARTS, &client);
+            test_email_validity_json(mail_variants::EMAIL_UNBALANCED, &client);
+            test_email_validity_json(mail_variants::EMAIL_INVALID_USER, &client);
+            test_email_validity_json(mail_variants::EMAIL_INVALID_DOMAIN, &client);
         }
         Err(error) => panic!("Invalid rocket instance: {error}"),
     }
