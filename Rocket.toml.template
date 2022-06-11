@@ -3,5 +3,7 @@ certs = "/path/to/fullchain.cer"
 key = "/path/to/site.dev.key"
 
 [application]
+# Can be overriden by environment variable FORM_SUBMISSION_destination_email
 destination_email = "test@domain.com"
+# Can be overriden by environment variable FORM_SUBMISSION_sending_email
 sending_email = "noreply@domain.com"

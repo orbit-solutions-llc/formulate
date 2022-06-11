@@ -1,8 +1,11 @@
 #[cfg(test)]
 use super::rocket;
-use super::strings::{EMAIL_VALIDATION_MSG, WELCOME_MSG};
+use super::strings::WELCOME_MSG;
 use rocket::http::{ContentType, Status};
 use rocket::local::blocking::{Client, LocalResponse};
+
+const EMAIL_VALIDATION_MSG: &str =
+    "Invalid email address provided. Please check email and try again.";
 
 mod mail_variants {
     pub const EMAIL_MISSING_PARTS: (&str, &str) = ("testtest.com", "Missing domain or user");
@@ -82,7 +85,7 @@ fn test_submit() {
 
 #[test]
 fn test_submit_json() {
-    let email_valid = "publico@thebennettproject.com";
+    let email_valid = "test@test.com";
 
     match Client::tracked(rocket()) {
         Ok(client) => {
