@@ -1,7 +1,9 @@
 use lettre::{Message, SendmailTransport, Transport};
-use rocket::figment::providers::Env;
-use rocket::serde::Deserialize;
-use rocket::Config;
+use rocket::{
+  Config,
+  figment::providers::Env,
+  serde::Deserialize
+};
 
 /// Potential errors which can be created when sending an email
 pub enum MailConfigError {

@@ -3,11 +3,13 @@ use mailer::{default_subject_line, send_email, MailConfigError};
 mod strings;
 use strings::{SUCCESS_MSG, WELCOME_MSG};
 
-use rocket::form::{Form, FromForm};
-use rocket::http::Status;
-use rocket::response::status::BadRequest;
-use rocket::serde::{json::Json, Deserialize};
-use rocket::{get, launch, post, routes};
+use rocket::{
+  form::{Form, FromForm},
+  {get, launch, post, routes},
+  http::Status,
+  response::status::BadRequest,
+  serde::{json::Json, Deserialize}
+};
 use validator::Validate;
 
 /// Form submission
