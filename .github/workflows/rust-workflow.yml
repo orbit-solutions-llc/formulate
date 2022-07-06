@@ -17,7 +17,7 @@ jobs:
         rust:
           - stable
           - beta
-          - 1.58.0
+          - 1.59.0
 
     steps:
     - name: Check out
@@ -51,4 +51,4 @@ jobs:
       env:
         FORM_SUBMISSION_DESTINATION_EMAIL: ${{secrets.FORM_SUBMISSION_DESTINATION_EMAIL}}
         FORM_SUBMISSION_SENDING_EMAIL: ${{secrets.FORM_SUBMISSION_SENDING_EMAIL}}
-      run: RUST_BACKTRACE=1 cargo test --verbose
+      run: cargo test --verbose
