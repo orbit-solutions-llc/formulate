@@ -48,4 +48,7 @@ jobs:
     - name: Build
       run: cargo build --verbose
     - name: Run tests
+      env:
+        FORM_SUBMISSION_DESTINATION_EMAIL: ${{secrets.FORM_SUBMISSION_DESTINATION_EMAIL}}
+        FORM_SUBMISSION_SENDING_EMAIL: ${{secrets.FORM_SUBMISSION_SENDING_EMAIL}}
       run: RUST_BACKTRACE=1 cargo test --verbose
