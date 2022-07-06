@@ -12,6 +12,11 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - beta
 
     steps:
     - name: Check out
@@ -20,6 +25,7 @@ jobs:
       uses: actions-rs/toolchain@v1
       with:
         profile: minimal
+        toolchain: ${{ matrix.rust }}
         override: true
         components: rustfmt, clippy
     - name: Set up cargo cache
