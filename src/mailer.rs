@@ -1,9 +1,5 @@
 use lettre::{Message, SendmailTransport, Transport};
-use rocket::{
-  Config,
-  figment::providers::Env,
-  serde::Deserialize
-};
+use rocket::{figment::providers::Env, serde::Deserialize, Config};
 
 /// Potential errors which can be created when sending an email
 pub enum MailConfigError {
@@ -86,6 +82,6 @@ pub fn send_email(
     let mailer = SendmailTransport::new();
     match mailer.send(&email_msg) {
         Ok(message) => Ok(message),
-        Err(error) => return Err(MailConfigError::SendmailTransport(error)),
+        Err(error) => Err(MailConfigError::SendmailTransport(error)),
     }
 }

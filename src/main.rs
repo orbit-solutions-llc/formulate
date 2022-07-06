@@ -2,15 +2,15 @@ mod mailer;
 use mailer::{default_subject_line, send_email, MailConfigError};
 mod strings;
 use strings::{SUCCESS_MSG, WELCOME_MSG};
+use validator::Validate;
 
 use rocket::{
-  form::{Form, FromForm},
-  {get, launch, post, routes},
-  http::Status,
-  response::status::BadRequest,
-  serde::{json::Json, Deserialize}
+    form::{Form, FromForm},
+    http::Status,
+    response::status::BadRequest,
+    serde::{json::Json, Deserialize},
+    {get, launch, post, routes},
 };
-use validator::Validate;
 
 /// Form submission
 #[derive(Debug, FromForm, Validate)]
