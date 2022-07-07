@@ -45,10 +45,15 @@ jobs:
       run: |
         cargo fmt --all -- --check
         cargo clippy
-    - name: Build
-      run: cargo build --verbose
     - name: Run tests
       env:
         FORM_SUBMISSION_DESTINATION_EMAIL: ${{secrets.FORM_SUBMISSION_DESTINATION_EMAIL}}
         FORM_SUBMISSION_SENDING_EMAIL: ${{secrets.FORM_SUBMISSION_SENDING_EMAIL}}
-      run: cargo test --verbose
+      run: |
+        echo '#!/bin/sh' > ${GITHUB_WORKSPACE}/sendmail
+        echo 'exit 0' >> ${GITHUB_WORKSPACE}/sendmail
+        chmod +x ${GITHUB_WORKSPACE}/sendmail
+        export PATH=$PATH:${GITHUB_WORKSPACE}
+        cargo test --verbose
+    - name: Build
+      run: cargo build --verbose
