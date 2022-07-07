@@ -7,9 +7,9 @@ edition = "2021"
 
 [dependencies]
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
-lettre = { version = "0.10.0-rc.4", features = ["sendmail-transport"] }
+lettre = { version = "0.10.0", features = ["sendmail-transport"] }
 validator = { version = "0.14", features = ["derive"] }
 
 [profile.release]
 # Works as of rust 1.59.0
-# strip = "debuginfo"
+strip = "debuginfo"
