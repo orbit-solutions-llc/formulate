@@ -82,8 +82,6 @@ pub fn send_email(
     let mailer = SendmailTransport::new();
     match mailer.send(&email_msg) {
         Ok(_) => Ok(()),
-        Err(error) => {
-          Err(MailConfigError::SendmailTransport(error))
-        },
+        Err(error) => Err(MailConfigError::SendmailTransport(error)),
     }
 }
