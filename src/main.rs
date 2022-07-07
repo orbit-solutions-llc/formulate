@@ -82,6 +82,7 @@ fn submit(form: Form<FormSubmission>) -> Result<(Status, &'static str), BadReque
                 MailConfigError::AppConfig(err) => Err(BadRequest(Some(err.to_string()))),
                 MailConfigError::EmailBuild(err) => Err(BadRequest(Some(err.to_string()))),
                 MailConfigError::SendmailTransport(err) => Err(BadRequest(Some(err.to_string()))),
+                MailConfigError::SmtpTransport(err) => Err(BadRequest(Some(err.to_string()))),
             }
         } else {
             Ok((Status::Ok, SUCCESS_MSG))
@@ -113,6 +114,7 @@ fn submit_json(
                 MailConfigError::AppConfig(err) => Err(BadRequest(Some(err.to_string()))),
                 MailConfigError::EmailBuild(err) => Err(BadRequest(Some(err.to_string()))),
                 MailConfigError::SendmailTransport(err) => Err(BadRequest(Some(err.to_string()))),
+                MailConfigError::SmtpTransport(err) => Err(BadRequest(Some(err.to_string()))),
             }
         } else {
             Ok((Status::Ok, SUCCESS_MSG))
